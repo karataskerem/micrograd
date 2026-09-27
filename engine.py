@@ -4,31 +4,26 @@ class Value:
         self.grad = 0
         self._prev = _children
         self._op = _op
+        self._backward = lambda: None
 
     def __repr__(self):
         return f"Value=({self.data}), grad=({self.grad})"
 
     def __add__(self, other):
-        out = self.data + other.data 
-        out._prev = (self, other)
-        out._op = ("+")
-
+        out = Value(self.data + other.data, (self,other), "+") 
         def _backward():
-            self.grad = 1*out.grad
-            other.grad = 1*out.grad
-            out._backward = _backward
+            self.grad += 1*out.grad
+            other.grad += 1*out.grad
+        out._backward = _backward
 
         return out 
 
     def __mul__(self, other):
-        out = self.data * other.data
-        out._prev = (self, other)
-        out._op = ("*")
-
+        out = Value(self.data*other.data, (self,other), "*")
         def _backward():
-            self.grad = other.data*out.grad
-            other.grad = self.grad*out.grad
-            out._backward = _backward
+            self.grad += other.data*out.grad
+            other.grad += self.grad*out.grad
+        out._backward = _backward
 
         return out
 
@@ -48,8 +43,14 @@ class Value:
 
 
 
+            
 
 
 
 
+a = Value(2)
+b = Value(3)
+
+c = a+b
+print(c._prev)
         
